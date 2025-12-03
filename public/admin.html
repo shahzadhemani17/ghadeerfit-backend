@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GhadeerFit Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .dropdown-menu { display: none; }
+        .dropdown-menu.show { display: block; }
+        .modal { display: none; }
+        .modal.show { display: flex; }
+        .hidden { display: none; }
+        #loading-screen { display: flex; }
+        #main-content { display: none; }
+        
+        /* Mobile-responsive table to card view */
+        @media (max-width: 768px) {
+            .responsive-table thead {
+                display: none;
+            }
+            
+            .responsive-table tbody {
+                display: block;
+            }
+            
+            .responsive-table tr {
+                display: block;
+                margin-bottom: 1rem;
+                border: 1px solid #e5e7eb;
+                border-radius: 0.5rem;
+                padding: 1rem;
+                background: white;
+                box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            }
+            
+            .responsive-table td {
+                display: flex;
+                justify-content: left;
+                align-items: flex-start;
+                border: none;
+            }
+            
+            .responsive-table td:before {
+                content: attr(data-label);
+                font-weight: 600;
+                text-align: left;
+                flex: 0 0 100px;
+                padding-right: 1rem;
+                color: #6b7280;
+                font-size: 0.875rem;
+            }
+            
+            .responsive-table td > * {
+                text-align: left;
+            }
+            
+            /* Adjust dropdown position on mobile */
+            .dropdown-menu {
+                right: 0;
+                left: auto;
+            }
+            
+            /* Full width modal on mobile */
+            .modal > div {
+                margin: 1rem;
+                max-width: calc(100vw - 2rem);
+                max-height: calc(100vh - 2rem);
+            }
+            
+            /* Header tabs scroll on mobile */
+            .tab-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+            }
+            
+            .tab-container::-webkit-scrollbar {
+                display: none;
+            }
+            
+            .tab-container > div {
+                min-width: max-content;
+            }
+        }
+        
+        /* Ensure touch targets are at least 44px */
+        @media (max-width: 768px) {
+            button, a {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            
+            input[type="checkbox"] {
+                width: 1.25rem;
+                height: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="fixed inset-0 bg-gray-50 items-center justify-center z-50">
+        <div class="text-center">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+            <p class="text-gray-600">Verifying authentication...</p>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div id="main-content">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <h1 class="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2 sm:gap-4">
+                    <img src="/images/logo.png" alt="GhadeerFit" class="w-8 h-8 sm:w-10 sm:h-10"> 
+                    <span class="whitespace-nowrap">GhadeerFit Admin</span>
+                </h1>
+                <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-stretch sm:items-center">
+                    <div class="tab-container w-full sm:w-auto overflow-x-auto">
+                        <div class="flex gap-2">
+                            <button onclick="showTab('videos')" id="videosTab" class="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg text-base whitespace-nowrap">Videos</button>
+                            <button onclick="showTab('categories')" id="categoriesTab" class="px-3 sm:px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-base whitespace-nowrap">Categories</button>
+                            <button onclick="showTab('banners')" id="bannersTab" class="px-3 sm:px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-base whitespace-nowrap">Banners</button>
+                            <button onclick="showTab('notifications')" id="notificationsTab" class="px-3 sm:px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-base whitespace-nowrap">Notifications</button>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center justify-center gap-2 whitespace-nowrap ml-2">
+                        
+                        <!-- Rounded, modern look -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20" height="24" role="img" aria-label="Power">
+    <title>Power</title>
+    <g fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M24 10v12"/>
+      <path d="M12.5 15.5a15.5 15.5 0 1 0 23 0"/>
+    </g>
+  </svg>
+  
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Videos Section -->
+        <div id="videosSection">
+            <div class="bg-white rounded-lg shadow">
+                <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                    <h2 class="text-xl font-semibold">Videos</h2>
+                    <button onclick="openVideoModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Add Video
+                    </button>
+                </div>
+                <div class="p-3 sm:p-6">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 responsive-table">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Link</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categories</th>                                    
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="videosList" class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Categories Section -->
+        <div id="categoriesSection" class="hidden">
+            <div class="bg-white rounded-lg shadow">
+                <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                    <h2 class="text-xl font-semibold">Categories</h2>
+                    <button onclick="openCategoryModal()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Add Category
+                    </button>
+                </div>
+                <div class="p-3 sm:p-6">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 responsive-table">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Videos</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="categoriesList" class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Banners Section -->
+        <div id="bannersSection" class="hidden">
+            <div class="bg-white rounded-lg shadow">
+                <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                    <h2 class="text-xl font-semibold">Banners</h2>
+                    <button onclick="openBannerModal()" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Add Banner
+                    </button>
+                </div>
+                <div class="p-3 sm:p-6">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 responsive-table">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bannersList" class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Section -->
+        <div id="notificationsSection" class="hidden">
+            <div class="bg-white rounded-lg shadow">
+                <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                    <h2 class="text-xl font-semibold">Notifications</h2>
+                    <button onclick="openNotificationModal()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Add Notification
+                    </button>
+                </div>
+                <div class="p-3 sm:p-6">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 responsive-table">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="notificationsList" class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Video Modal -->
+    <div id="videoModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h3 id="videoModalTitle" class="text-xl font-semibold">Add New Video</h3>
+                <button onclick="closeVideoModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <form id="videoForm" class="space-y-4">
+                    <input type="hidden" id="videoId">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                        <input type="text" id="videoTitle" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">YouTube URL *</label>
+                        <input type="url" id="videoLink" required placeholder="https://youtube.com/watch?v=..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <textarea id="videoDescription" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Categories</label>
+                        <div id="categoryCheckboxes" class="space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                            <p class="text-sm text-gray-500">Loading categories...</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 justify-end">
+                        <button type="button" onclick="closeVideoModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Cancel</button>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save Video</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Modal -->
+    <div id="categoryModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4">
+            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h3 id="categoryModalTitle" class="text-xl font-semibold">Add New Category</h3>
+                <button onclick="closeCategoryModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <form id="categoryForm" class="space-y-4">
+                    <input type="hidden" id="categoryId">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Category Name *</label>
+                        <input type="text" id="categoryName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <textarea id="categoryDescription" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                    </div>
+                    <div class="flex gap-2 justify-end">
+                        <button type="button" onclick="closeCategoryModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Cancel</button>
+                        <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Save Category</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Banner Modal -->
+    <div id="bannerModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h3 id="bannerModalTitle" class="text-xl font-semibold">Add New Banner</h3>
+                <button onclick="closeBannerModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <form id="bannerForm" class="space-y-4" enctype="multipart/form-data">
+                    <input type="hidden" id="bannerId">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                        <input type="text" id="bannerTitle" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Banner Image * (max 5MB)</label>
+                        <input type="file" id="bannerImage" accept="image/jpeg,image/jpg,image/png,image/webp" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                        <p class="text-xs text-gray-500 mt-1">Required for new banners. Leave empty when editing to keep existing image.</p>
+                        <div id="currentBannerImgPreview" class="mt-2 hidden">
+                            <p class="text-xs text-gray-600 mb-1">Current banner:</p>
+                            <img id="currentBannerImgEl" src="" alt="Current banner" class="h-32 rounded border">
+                        </div>
+                    </div>
+                    <div>
+                        <input type="hidden" id="bannerLink">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Order</label>
+                            <input type="number" id="bannerOrder" value="0" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                            <p class="text-xs text-gray-500 mt-1">Lower numbers appear first</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                            <label class="flex items-center space-x-2 mt-2">
+                                <input type="checkbox" id="bannerActive" checked class="w-5 h-5 text-orange-600">
+                                <span class="text-sm">Active (visible on homepage)</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 justify-end">
+                        <button type="button" onclick="closeBannerModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Cancel</button>
+                        <button type="submit" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">Save Banner</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div id="notificationModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4">
+            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h3 id="notificationModalTitle" class="text-xl font-semibold">Add New Notification</h3>
+                <button onclick="closeNotificationModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <form id="notificationForm" class="space-y-4">
+                    <input type="hidden" id="notificationId">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                        <input type="text" id="notificationTitle" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+                        <textarea id="notificationDescription" required rows="5" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"></textarea>
+                    </div>
+                    <div class="flex gap-2 justify-end">
+                        <button type="button" onclick="closeNotificationModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Cancel</button>
+                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Save Notification</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+        let currentTab = 'videos';
+        let allCategories = [];
+
+        // Dropdown menu handling
+        let currentDropdown = null;
+        function toggleDropdown(id) {
+            const dropdown = document.getElementById(id);
+            if (currentDropdown && currentDropdown !== dropdown) {
+                currentDropdown.classList.remove('show');
+            }
+            dropdown.classList.toggle('show');
+            currentDropdown = dropdown.classList.contains('show') ? dropdown : null;
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown-container')) {
+                if (currentDropdown) {
+                    currentDropdown.classList.remove('show');
+                    currentDropdown = null;
+                }
+            }
+        });
+
+        // Modal functions
+        function openVideoModal() {
+            resetVideoForm();
+            document.getElementById('videoModalTitle').textContent = 'Add New Video';
+            document.getElementById('videoModal').classList.add('show');
+        }
+
+        function closeVideoModal() {
+            document.getElementById('videoModal').classList.remove('show');
+            resetVideoForm();
+        }
+
+        function openCategoryModal() {
+            resetCategoryForm();
+            document.getElementById('categoryModalTitle').textContent = 'Add New Category';
+            document.getElementById('categoryModal').classList.add('show');
+        }
+
+        function closeCategoryModal() {
+            document.getElementById('categoryModal').classList.remove('show');
+            resetCategoryForm();
+        }
+
+        function openBannerModal() {
+            resetBannerForm();
+            document.getElementById('bannerModalTitle').textContent = 'Add New Banner';
+            document.getElementById('bannerModal').classList.add('show');
+        }
+
+        function closeBannerModal() {
+            document.getElementById('bannerModal').classList.remove('show');
+            resetBannerForm();
+        }
+
+        function openNotificationModal() {
+            resetNotificationForm();
+            document.getElementById('notificationModalTitle').textContent = 'Add New Notification';
+            document.getElementById('notificationModal').classList.add('show');
+        }
+
+        function closeNotificationModal() {
+            document.getElementById('notificationModal').classList.remove('show');
+            resetNotificationForm();
+        }
+
+        // Tab switching
+        function showTab(tab) {
+            currentTab = tab;
+            document.getElementById('videosSection').classList.toggle('hidden', tab !== 'videos');
+            document.getElementById('categoriesSection').classList.toggle('hidden', tab !== 'categories');
+            document.getElementById('bannersSection').classList.toggle('hidden', tab !== 'banners');
+            document.getElementById('notificationsSection').classList.toggle('hidden', tab !== 'notifications');
+            
+            document.getElementById('videosTab').className = tab === 'videos' 
+                ? 'px-4 py-2 bg-blue-600 text-white rounded-lg' 
+                : 'px-4 py-2 bg-gray-200 text-gray-700 rounded-lg';
+            document.getElementById('categoriesTab').className = tab === 'categories' 
+                ? 'px-4 py-2 bg-purple-600 text-white rounded-lg' 
+                : 'px-4 py-2 bg-gray-200 text-gray-700 rounded-lg';
+            document.getElementById('bannersTab').className = tab === 'banners' 
+                ? 'px-4 py-2 bg-orange-600 text-white rounded-lg' 
+                : 'px-4 py-2 bg-gray-200 text-gray-700 rounded-lg';
+            document.getElementById('notificationsTab').className = tab === 'notifications' 
+                ? 'px-4 py-2 bg-green-600 text-white rounded-lg' 
+                : 'px-4 py-2 bg-gray-200 text-gray-700 rounded-lg';
+            
+            if (tab === 'videos') loadVideos();
+            else if (tab === 'categories') loadCategories();
+            else if (tab === 'banners') loadBanners();
+            else loadNotifications();
+        }
+
+        // Load categories for checkboxes
+        async function loadCategoryCheckboxes() {
+            try {
+                const response = await fetch(`${API_URL}/api/categories`);
+                allCategories = await response.json();
+                const container = document.getElementById('categoryCheckboxes');
+                
+                if (allCategories.length === 0) {
+                    container.innerHTML = '<p class="text-sm text-gray-500">No categories yet. Create some in the Categories tab!</p>';
+                    return;
+                }
+
+                container.innerHTML = allCategories.map(cat => `
+                    <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                        <input type="checkbox" value="${cat.id}" class="category-checkbox" />
+                        <span class="text-sm">${cat.name}</span>
+                    </label>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        }
+
+        // Videos CRUD
+        async function loadVideos() {
+            await loadCategoryCheckboxes();
+            
+            try {
+                const response = await fetch(`${API_URL}/api/videos?limit=1000`);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || `HTTP ${response.status}`);
+                }
+                
+                const videos = Array.isArray(data.videos) ? data.videos : (Array.isArray(data) ? data : []);
+                const container = document.getElementById('videosList');
+                
+                if (videos.length === 0) {
+                    container.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">No videos yet. Click "Add New Video" to create one!</td></tr>';
+                    return;
+                }
+
+                container.innerHTML = videos.map((video, index) => {
+                    const categoryNames = video.categories?.map(vc => vc.category.name).join(', ') || 'None';
+                    const shortLink = video.video_link.length > 40 ? video.video_link.substring(0, 40) + '...' : video.video_link;
+                    
+                    return `
+                        <tr class="hover:bg-gray-50">
+                            <td data-label="Title" class="px-6 py-4 max-w-xs">
+                                <div class="text-sm font-medium text-gray-900 break-words">${video.title}</div>
+                                ${video.description ? `<div class="text-xs text-gray-500 mt-1 break-words">${video.description.substring(0, 50)}${video.description.length > 50 ? '...' : ''}</div>` : ''}
+                            </td>
+                            <td data-label="Link" class="px-6 py-4 whitespace-nowrap">
+                                <a href="${video.video_link}" target="_blank" class="text-sm text-blue-600 hover:underline break-all">${shortLink}</a>
+                            </td>
+                            <td data-label="Categories" class="px-6 py-4">
+                                <div class="text-sm text-gray-900 break-words">${categoryNames}</div>
+                            </td>
+                            <td data-label="Actions" class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="dropdown-container relative inline-block">
+                                    <button onclick="toggleDropdown('videoDropdown${index}')" class="text-gray-400 hover:text-gray-600 p-2">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
+                                        </svg>
+                                    </button>
+                                    <div id="videoDropdown${index}" class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10 text-left">
+                                        <div class="py-1">
+                                            <a href="#" onclick="event.preventDefault(); editVideo(${video.id})" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                                Edit
+                                            </a>
+                                            <a href="#" onclick="event.preventDefault(); deleteVideo(${video.id})" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                </svg>
+                                                Delete
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading videos:', error);
+                const container = document.getElementById('videosList');
+                container.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-red-500">Error loading videos: ${error.message || 'Unknown error'}</td></tr>`;
+                showNotification(`Error loading videos: ${error.message || 'Unknown error'}`, 'error');
+            }
+        }
+
+        async function editVideo(id) {
+            try {
+                const response = await fetch(`${API_URL}/api/videos/${id}`);
+                const video = await response.json();
+                
+                document.getElementById('videoId').value = video.id;
+                document.getElementById('videoTitle').value = video.title;
+                document.getElementById('videoLink').value = video.video_link;
+                document.getElementById('videoDescription').value = video.description || '';
+                
+                // Check relevant categories
+                document.querySelectorAll('.category-checkbox').forEach(cb => cb.checked = false);
+                if (video.categories) {
+                    video.categories.forEach(vc => {
+                        const checkbox = document.querySelector(`.category-checkbox[value="${vc.categoryId}"]`);
+                        if (checkbox) checkbox.checked = true;
+                    });
+                }
+                
+                document.getElementById('videoModalTitle').textContent = 'Edit Video';
+                document.getElementById('videoModal').classList.add('show');
+            } catch (error) {
+                showNotification('Error loading video', 'error');
+            }
+        }
+
+        async function deleteVideo(id) {
+            if (!confirm('Are you sure you want to delete this video?')) return;
+            
+            try {
+                await fetch(`${API_URL}/api/videos/${id}`, { method: 'DELETE' });
+                showNotification('Video deleted successfully', 'success');
+                loadVideos();
+            } catch (error) {
+                showNotification('Error deleting video', 'error');
+            }
+        }
+
+        function resetVideoForm() {
+            document.getElementById('videoForm').reset();
+            document.getElementById('videoId').value = '';
+            document.querySelectorAll('.category-checkbox').forEach(cb => cb.checked = false);
+        }
+
+        document.getElementById('videoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('videoId').value;
+            
+            // Get selected categories
+            const selectedCategories = Array.from(document.querySelectorAll('.category-checkbox:checked')).map(cb => cb.value);
+            
+            const data = {
+                title: document.getElementById('videoTitle').value,
+                video_link: document.getElementById('videoLink').value,
+                description: document.getElementById('videoDescription').value,
+                category_ids: JSON.stringify(selectedCategories)
+            };
+
+            try {
+                const url = id ? `${API_URL}/api/videos/${id}` : `${API_URL}/api/videos`;
+                const method = id ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) throw new Error('Failed to save video');
+
+                showNotification(`Video ${id ? 'updated' : 'created'} successfully`, 'success');
+                closeVideoModal();
+                loadVideos();
+            } catch (error) {
+                console.error('Error saving video:', error);
+                showNotification('Error saving video', 'error');
+            }
+        });
+
+        // Categories CRUD
+        async function loadCategories() {
+            try {
+                const response = await fetch(`${API_URL}/api/categories`);
+                const categories = await response.json();
+                const container = document.getElementById('categoriesList');
+                
+                if (categories.length === 0) {
+                    container.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">No categories yet. Click "Add New Category" to create one!</td></tr>';
+                    return;
+                }
+
+                container.innerHTML = categories.map((cat, index) => `
+                    <tr class="hover:bg-gray-50">
+                        <td data-label="Name" class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">${cat.name}</div>
+                        </td>
+                        <td data-label="Description" class="px-6 py-4">
+                            <div class="text-sm text-gray-900">${cat.description ? (cat.description.substring(0, 50) + (cat.description.length > 50 ? '...' : '')) : '-'}</div>
+                        </td>
+                        <td data-label="Videos" class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${cat._count?.videos || 0}</div>
+                        </td>
+                        <td data-label="Actions" class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="dropdown-container relative inline-block">
+                                <button onclick="toggleDropdown('categoryDropdown${index}')" class="text-gray-400 hover:text-gray-600 p-2">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
+                                    </svg>
+                                </button>
+                                <div id="categoryDropdown${index}" class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10 text-left">
+                                    <div class="py-1">
+                                        <a href="#" onclick="event.preventDefault(); editCategory('${cat.id}')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                            Edit
+                                        </a>
+                                        <a href="#" onclick="event.preventDefault(); deleteCategory('${cat.id}')" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                            Delete
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading categories:', error);
+                showNotification('Error loading categories', 'error');
+            }
+        }
+
+        async function editCategory(id) {
+            try {
+                const response = await fetch(`${API_URL}/api/categories/${id}`);
+                const category = await response.json();
+                
+                document.getElementById('categoryId').value = category.id;
+                document.getElementById('categoryName').value = category.name;
+                document.getElementById('categoryDescription').value = category.description || '';
+                
+                document.getElementById('categoryModalTitle').textContent = 'Edit Category';
+                document.getElementById('categoryModal').classList.add('show');
+            } catch (error) {
+                showNotification('Error loading category', 'error');
+            }
+        }
+
+        async function deleteCategory(id) {
+            if (!confirm('Are you sure you want to delete this category?')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/categories/${id}`, { method: 'DELETE' });
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to delete');
+                }
+                showNotification('Category deleted successfully', 'success');
+                loadCategories();
+            } catch (error) {
+                showNotification(error.message || 'Error deleting category', 'error');
+            }
+        }
+
+        function resetCategoryForm() {
+            document.getElementById('categoryForm').reset();
+            document.getElementById('categoryId').value = '';
+        }
+
+        document.getElementById('categoryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('categoryId').value;
+            const data = {
+                name: document.getElementById('categoryName').value,
+                description: document.getElementById('categoryDescription').value
+            };
+
+            try {
+                const url = id ? `${API_URL}/api/categories/${id}` : `${API_URL}/api/categories`;
+                const method = id ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to save');
+                }
+
+                showNotification(`Category ${id ? 'updated' : 'created'} successfully`, 'success');
+                closeCategoryModal();
+                loadCategories();
+                loadCategoryCheckboxes();
+            } catch (error) {
+                showNotification(error.message || 'Error saving category', 'error');
+            }
+        });
+
+        // Banners CRUD
+        async function loadBanners() {
+            try {
+                const response = await fetch(`${API_URL}/api/banners`);
+                const banners = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(banners.error || `HTTP ${response.status}`);
+                }
+                
+                if (!Array.isArray(banners)) {
+                    throw new Error('Invalid response format: expected an array');
+                }
+                
+                const container = document.getElementById('bannersList');
+                
+                if (banners.length === 0) {
+                    container.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">No banners yet. Click "Add New Banner" to create one!</td></tr>';
+                    return;
+                }
+
+                container.innerHTML = banners.map((banner, index) => `
+                    <tr class="hover:bg-gray-50">
+                        <td data-label="Image" class="px-6 py-4 whitespace-nowrap">
+                            <img src="${banner.image_url}" alt="${banner.title || 'Banner'}" class="h-16 w-auto rounded border">
+                        </td>
+                        <td data-label="Order" class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${banner.order}</div>
+                        </td>
+                        <td data-label="Status" class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${banner.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                ${banner.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                        </td>
+                        <td data-label="Actions" class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="dropdown-container relative inline-block">
+                                <button onclick="toggleDropdown('bannerDropdown${index}')" class="text-gray-400 hover:text-gray-600 p-2">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
+                                    </svg>
+                                </button>
+                                <div id="bannerDropdown${index}" class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10 text-left">
+                                    <div class="py-1">
+                                        <a href="#" onclick="event.preventDefault(); editBanner(${banner.id})" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                            Edit
+                                        </a>
+                                        <a href="#" onclick="event.preventDefault(); deleteBanner(${banner.id})" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                            Delete
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading banners:', error);
+                const container = document.getElementById('bannersList');
+                container.innerHTML = `<tr><td colspan="6" class="px-6 py-4 text-center text-red-500">Error loading banners: ${error.message || 'Unknown error'}</td></tr>`;
+                showNotification(`Error loading banners: ${error.message || 'Unknown error'}`, 'error');
+            }
+        }
+
+        async function editBanner(id) {
+            try {
+                const response = await fetch(`${API_URL}/api/banners/${id}`);
+                const banner = await response.json();
+                
+                document.getElementById('bannerId').value = banner.id;
+                document.getElementById('bannerTitle').value = banner.title;
+                document.getElementById('bannerLink').value = banner.link_url || '';
+                document.getElementById('bannerOrder').value = banner.order;
+                document.getElementById('bannerActive').checked = banner.is_active;
+                
+                // Show current banner image
+                if (banner.image_url) {
+                    document.getElementById('currentBannerImgPreview').classList.remove('hidden');
+                    document.getElementById('currentBannerImgEl').src = banner.image_url;
+                }
+                
+                document.getElementById('bannerModalTitle').textContent = 'Edit Banner';
+                document.getElementById('bannerModal').classList.add('show');
+            } catch (error) {
+                showNotification('Error loading banner', 'error');
+            }
+        }
+
+        async function deleteBanner(id) {
+            if (!confirm('Are you sure you want to delete this banner?')) return;
+            
+            try {
+                await fetch(`${API_URL}/api/banners/${id}`, { method: 'DELETE' });
+                showNotification('Banner deleted successfully', 'success');
+                loadBanners();
+            } catch (error) {
+                showNotification('Error deleting banner', 'error');
+            }
+        }
+
+        function resetBannerForm() {
+            document.getElementById('bannerForm').reset();
+            document.getElementById('bannerId').value = '';
+            document.getElementById('currentBannerImgPreview').classList.add('hidden');
+            document.getElementById('bannerActive').checked = true;
+        }
+
+        document.getElementById('bannerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('bannerId').value;
+            const formData = new FormData();
+            
+            formData.append('title', document.getElementById('bannerTitle').value);
+            formData.append('link_url', document.getElementById('bannerLink').value);
+            formData.append('order', document.getElementById('bannerOrder').value);
+            formData.append('is_active', document.getElementById('bannerActive').checked);
+            
+            // Add banner image if selected
+            const bannerFile = document.getElementById('bannerImage').files[0];
+            if (bannerFile) {
+                formData.append('banner_image', bannerFile);
+            } else if (!id) {
+                showNotification('Banner image is required for new banners', 'error');
+                return;
+            }
+
+            try {
+                const url = id ? `${API_URL}/api/banners/${id}` : `${API_URL}/api/banners`;
+                const method = id ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method,
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Failed to save banner');
+
+                showNotification(`Banner ${id ? 'updated' : 'created'} successfully`, 'success');
+                closeBannerModal();
+                loadBanners();
+            } catch (error) {
+                console.error('Error saving banner:', error);
+                showNotification('Error saving banner', 'error');
+            }
+        });
+
+        // Notifications CRUD
+        async function loadNotifications() {
+            try {
+                const response = await fetch(`${API_URL}/api/notifications`);
+                const notifications = await response.json();
+                const container = document.getElementById('notificationsList');
+                
+                if (notifications.length === 0) {
+                    container.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">No notifications yet. Click "Add New Notification" to create one!</td></tr>';
+                    return;
+                }
+
+                container.innerHTML = notifications.map((notif, index) => `
+                    <tr class="hover:bg-gray-50">
+                        <td data-label="Title" class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">${notif.title}</div>
+                        </td>
+                        <td data-label="Description" class="px-6 py-4">
+                            <div class="text-sm text-gray-900">${notif.description.substring(0, 100)}${notif.description.length > 100 ? '...' : ''}</div>
+                        </td>
+                        <td data-label="Created" class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${new Date(notif.createdAt).toLocaleDateString()}</div>
+                        </td>
+                        <td data-label="Actions" class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="dropdown-container relative inline-block">
+                                <button onclick="toggleDropdown('notificationDropdown${index}')" class="text-gray-400 hover:text-gray-600 p-2">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
+                                    </svg>
+                                </button>
+                                <div id="notificationDropdown${index}" class="dropdown-menu absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10 text-left">
+                                    <div class="py-1">
+                                        <a href="#" onclick="event.preventDefault(); editNotification(${notif.id})" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                            Edit
+                                        </a>
+                                        <a href="#" onclick="event.preventDefault(); deleteNotification(${notif.id})" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                            Delete
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+                showNotification('Error loading notifications', 'error');
+            }
+        }
+
+        async function editNotification(id) {
+            try {
+                const response = await fetch(`${API_URL}/api/notifications/${id}`);
+                const notif = await response.json();
+                document.getElementById('notificationId').value = notif.id;
+                document.getElementById('notificationTitle').value = notif.title;
+                document.getElementById('notificationDescription').value = notif.description;
+                document.getElementById('notificationModalTitle').textContent = 'Edit Notification';
+                document.getElementById('notificationModal').classList.add('show');
+            } catch (error) {
+                showNotification('Error loading notification', 'error');
+            }
+        }
+
+        async function deleteNotification(id) {
+            if (!confirm('Are you sure you want to delete this notification?')) return;
+            
+            try {
+                await fetch(`${API_URL}/api/notifications/${id}`, { method: 'DELETE' });
+                showNotification('Notification deleted successfully', 'success');
+                loadNotifications();
+            } catch (error) {
+                showNotification('Error deleting notification', 'error');
+            }
+        }
+
+        function resetNotificationForm() {
+            document.getElementById('notificationForm').reset();
+            document.getElementById('notificationId').value = '';
+        }
+
+        document.getElementById('notificationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('notificationId').value;
+            const data = {
+                title: document.getElementById('notificationTitle').value,
+                description: document.getElementById('notificationDescription').value
+            };
+
+            try {
+                const url = id ? `${API_URL}/api/notifications/${id}` : `${API_URL}/api/notifications`;
+                const method = id ? 'PUT' : 'POST';
+                
+                await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                showNotification(`Notification ${id ? 'updated' : 'created'} successfully`, 'success');
+                closeNotificationModal();
+                loadNotifications();
+            } catch (error) {
+                showNotification('Error saving notification', 'error');
+            }
+        });
+
+        // Notification toast
+        function showNotification(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} z-50`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Authentication
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${API_URL}/api/auth/check`, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                if (data.authenticated) {
+                    // User is authenticated, show admin content
+                    document.getElementById('loading-screen').style.display = 'none';
+                    document.getElementById('main-content').style.display = 'block';
+                    loadVideos();
+                } else {
+                    // User is not authenticated, redirect to login
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                console.error('Auth check error:', error);
+                // Redirect to login on error
+                window.location.href = '/login';
+            }
+        }
+
+        // Logout function
+        async function logout() {
+            if (!confirm('Are you sure you want to logout?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/api/auth/logout`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    window.location.href = '/login';
+                } else {
+                    showNotification('Failed to logout', 'error');
+                }
+            } catch (error) {
+                console.error('Logout error:', error);
+                showNotification('An error occurred during logout', 'error');
+            }
+        }
+
+        // Initialize authentication check on page load
+        checkAuth();
+    </script>
+    </div> <!-- End of main-content -->
+</body>
+</html>
