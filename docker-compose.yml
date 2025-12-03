@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: ghadeerfit-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: videostream
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ghadeerfit-network
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: ghadeerfit-backend
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/videostream?schema=public
+      PORT: 5000
+      NODE_ENV: development
+    ports:
+      - "5001:5000"
+      - "5555:5555"
+    volumes:
+      - ./src:/app/src
+      - ./prisma:/app/prisma
+      - ./public:/app/public
+      - backend_node_modules:/app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ghadeerfit-network
+    command: sh -c "npx prisma generate && npx prisma migrate deploy && npm run dev"
+
+volumes:
+  postgres_data:
+  backend_node_modules:
+
+networks:
+  ghadeerfit-network:
+    driver: bridge
+
