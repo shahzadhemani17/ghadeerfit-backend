@@ -58,6 +58,9 @@ RUN npx prisma generate
 # Copy built application
 COPY --from=builder /app/dist ./dist
 
+# Copy public folder for static files (HTML pages and uploaded images)
+COPY --from=builder /app/public ./public
+
 # Copy startup script
 COPY scripts/start-prod.sh ./scripts/
 RUN chmod +x ./scripts/start-prod.sh
