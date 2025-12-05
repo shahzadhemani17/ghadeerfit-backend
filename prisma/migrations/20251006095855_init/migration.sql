@@ -42,7 +42,7 @@ CREATE UNIQUE INDEX "users_username_key" ON "users"("username");
 INSERT INTO "users" ("username", "password", "createdAt", "updatedAt")
 VALUES (
     'ghadeer',
-    '$2b$10$N9qo8uLOickgx2ZMRZoMye/JpZXJ5cKJ5zvJKJsKsKGT8bNL8aFv.',
+    '$2b$10$TBoMl9.dUwTFaoJV2w4psecHEmwBvd5WjAimCOf6OKZgCk7buwaYa',
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
 ) ON CONFLICT (username) DO NOTHING;
