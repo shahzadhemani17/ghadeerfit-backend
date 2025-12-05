@@ -1094,12 +1094,14 @@
         }
 
         // Authentication
-        async function checkAuth() {
+        async function checkAuth(retryCount = 0) {
             try {
                 const response = await fetch(`${API_URL}/api/auth/check`, {
                     credentials: 'include'
                 });
                 const data = await response.json();
+                
+                console.log('Auth check response:', data);
                 
                 if (data.authenticated) {
                     // User is authenticated, show admin content
@@ -1107,13 +1109,27 @@
                     document.getElementById('main-content').style.display = 'block';
                     loadVideos();
                 } else {
-                    // User is not authenticated, redirect to login
-                    window.location.href = '/login';
+                    // Retry once if it's the first attempt (handles timing issues after redirect)
+                    if (retryCount === 0) {
+                        console.log('Auth check failed, retrying in 500ms...');
+                        setTimeout(() => checkAuth(1), 500);
+                    } else {
+                        // User is not authenticated after retry, redirect to login
+                        console.log('Auth check failed after retry, redirecting to login');
+                        window.location.href = '/login';
+                    }
                 }
             } catch (error) {
                 console.error('Auth check error:', error);
-                // Redirect to login on error
-                window.location.href = '/login';
+                // Retry once on error
+                if (retryCount === 0) {
+                    console.log('Auth check error, retrying in 500ms...');
+                    setTimeout(() => checkAuth(1), 500);
+                } else {
+                    // Redirect to login on error after retry
+                    console.log('Auth check error after retry, redirecting to login');
+                    window.location.href = '/login';
+                }
             }
         }
 

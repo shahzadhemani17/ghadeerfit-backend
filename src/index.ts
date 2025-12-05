@@ -61,11 +61,14 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key-change-this-in-production',
   resave: false,
   saveUninitialized: false,
+  name: 'ghadeerfit.sid', // Custom session name
+  proxy: process.env.NODE_ENV === 'production', // Trust proxy in production (Render uses proxy)
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.NODE_ENV === 'production', // HTTPS only in production
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' // Allow cross-site cookies in production
+    sameSite: 'lax', // 'lax' works for same-origin (admin on same domain as API)
+    path: '/' // Cookie available for all paths
   }
 }));
 
@@ -73,23 +76,34 @@ app.use(session({
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Login page route
-app.get('/login', (req, res) => {
+app.get('/login', (req: express.Request, res: express.Response) => {
   res.sendFile(path.join(__dirname, '../public/login.html'));
 });
 
 // Admin panel route
-app.get('/admin', (req, res) => {
+app.get('/admin', (req: express.Request, res: express.Response) => {
   res.sendFile(path.join(__dirname, '../public/admin.html'));
 });
 
 // Root route - redirect to login
-app.get('/', (req, res) => {
+app.get('/', (req: express.Request, res: express.Response) => {
   res.redirect('/login');
 });
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/health', (req: express.Request, res: express.Response) => {
   res.json({ status: 'ok', message: 'Server is running' });
+});
+
+// Debug endpoint (remove in production or protect with auth)
+app.get('/debug/session', (req: express.Request, res: express.Response) => {
+  res.json({
+    sessionID: req.sessionID,
+    session: req.session,
+    cookies: req.headers.cookie,
+    nodeEnv: process.env.NODE_ENV,
+    hasUserId: !!req.session.userId
+  });
 });
 
 // Routes

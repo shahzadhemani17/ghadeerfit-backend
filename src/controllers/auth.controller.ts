@@ -49,13 +49,26 @@ export const login = async (req: Request, res: Response) => {
     // Set session
     req.session.userId = user.id;
 
-    res.json({ 
-      success: true,
-      message: 'Login successful',
-      user: {
-        id: user.id,
-        username: user.username
+    // Save session explicitly to ensure it's persisted
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({ 
+          success: false,
+          error: 'Failed to save session' 
+        });
       }
+
+      console.log('Login successful for user:', user.username, 'Session ID:', req.sessionID);
+      
+      res.json({ 
+        success: true,
+        message: 'Login successful',
+        user: {
+          id: user.id,
+          username: user.username
+        }
+      });
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -76,7 +89,7 @@ export const logout = async (req: Request, res: Response) => {
           error: 'Failed to logout' 
         });
       }
-      res.clearCookie('connect.sid');
+      res.clearCookie('ghadeerfit.sid'); // Match the custom session name
       res.json({ 
         success: true,
         message: 'Logout successful' 
@@ -94,10 +107,13 @@ export const logout = async (req: Request, res: Response) => {
 // Check authentication status
 export const checkAuth = async (req: Request, res: Response) => {
   try {
+    console.log('Auth check - Session ID:', req.sessionID, 'User ID:', req.session.userId);
+    
     if (!req.session.userId) {
       return res.status(401).json({ 
         success: false,
-        authenticated: false 
+        authenticated: false,
+        message: 'No active session'
       });
     }
 
