@@ -49,7 +49,7 @@ ENV NODE_ENV=production
 COPY package*.json ./
 RUN npm install --only=production
 
-# Copy Prisma schema
+# Copy Prisma schema and migrations
 COPY prisma ./prisma/
 
 # Generate Prisma Client
@@ -58,7 +58,11 @@ RUN npx prisma generate
 # Copy built application
 COPY --from=builder /app/dist ./dist
 
+# Copy startup script
+COPY scripts/start-prod.sh ./scripts/
+RUN chmod +x ./scripts/start-prod.sh
+
 EXPOSE 5000
 
-CMD ["node", "dist/index.js"]
+CMD ["./scripts/start-prod.sh"]
 
