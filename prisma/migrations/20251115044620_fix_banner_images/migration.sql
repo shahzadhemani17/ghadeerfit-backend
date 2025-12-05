@@ -1,7 +1,7 @@
 -- CreateTable
 CREATE TABLE "banner_images" (
     "id" SERIAL NOT NULL,
-    "title" TEXT NOT NULL,
+    "title" TEXT,
     "image_url" TEXT NOT NULL,
     "link_url" TEXT,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
